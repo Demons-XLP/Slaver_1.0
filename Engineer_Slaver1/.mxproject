@@ -1,7 +1,7 @@
 [PreviousGenFiles]
-HeaderPath=E:/2020RM_Text/Engineer_Slaver1/Inc
+HeaderPath=E:/Slaver_1.0/Engineer_Slaver1/Inc
 HeaderFiles=gpio.h;adc.h;can.h;dma.h;spi.h;tim.h;stm32f4xx_it.h;stm32f4xx_hal_conf.h;main.h;FreeRTOSConfig.h;
-SourcePath=E:/2020RM_Text/Engineer_Slaver1/Src
+SourcePath=E:/Slaver_1.0/Engineer_Slaver1/Src
 SourceFiles=gpio.c;adc.c;can.c;dma.c;spi.c;tim.c;stm32f4xx_it.c;stm32f4xx_hal_msp.c;stm32f4xx_hal_timebase_tim.c;main.c;freertos.c;
 
 [PreviousLibFiles]

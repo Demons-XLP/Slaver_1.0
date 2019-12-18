@@ -34,6 +34,8 @@ engineer_slaver1\app_car.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pw
 engineer_slaver1\app_car.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h
 engineer_slaver1\app_car.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 engineer_slaver1\app_car.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
+engineer_slaver1\app_car.o: .\My_BSP\bsp_motor.hpp
+engineer_slaver1\app_car.o: .\My_BSP\bsp_car_config.hpp
 engineer_slaver1\app_car.o: ../Inc/main.h
 engineer_slaver1\app_car.o: .\My_BSP\bsp_my_can.h
 engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h
@@ -50,5 +52,3 @@ engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/t
 engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
-engineer_slaver1\app_car.o: .\My_BSP\bsp_motor.hpp
-engineer_slaver1\app_car.o: .\My_BSP\bsp_car_config.hpp

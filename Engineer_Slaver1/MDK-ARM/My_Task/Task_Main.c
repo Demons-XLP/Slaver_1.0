@@ -6,6 +6,10 @@
 #include "app_car.hpp"
 
 
+void Caisson_TakeTask(void const *argument)
+{
+  
+}
 
 
 
@@ -14,10 +18,12 @@ void MainTask(void const * argument)
 	static TickType_t xLastWakeTime;
 	xLastWakeTime = xTaskGetTickCount();//获取当前的系统时间
 	
-	MotorInit();  //电机相关初始化
   bsp_ADC_Sensor_Init();  //夏普红外初始化
 	bsp_can_Init();  //CAN初始化
   manager::CANSelect(&hcan1,&hcan2);  //选择CAN1和CAN2
+	MotorInit();  //电机相关初始化
+//	osThreadDef(Caisson_TakeTask,Caisson_TakeTask,osPriorityBelowNormal,0,128);
+//	osThreadCreate(osThread(Caisson_TakeTask),NULL);
 	
 	for(;;)
 	{
@@ -28,3 +34,5 @@ void MainTask(void const * argument)
 	
 }
  
+
+
