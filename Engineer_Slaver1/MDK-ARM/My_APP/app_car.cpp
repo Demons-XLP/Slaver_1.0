@@ -26,6 +26,7 @@
 #include "bsp_my_can.h"
 #include "cmsis_os.h"
 #include "bsp_motor.hpp"
+#include "task_main.h"
 
 Motor_t DJI_Motor_3508(8192, 19);
 pid app_car_Claw_pid_In(1.5,0,0,0,10000,0,0,0);  //移爪内环
@@ -42,6 +43,8 @@ float Claw_motor_Origin;  //存放爪子零点
 float Claw_TargetAngle;  //爪子目标值
 float Proportion = 1;   //爪子位移路程的比例
 float Claw_L_Lim,Claw_R_Lim;  //爪子电机的左右边限位
+uint8_t app_car_ClawTake_Flag1;  //是否一级取弹判断
+uint8_t app_car_ClawTake_Flag2;  //是否二级取弹判断
 
 
 
@@ -59,35 +62,30 @@ void MotorInit()
 	Omron[1] = HAL_GPIO_ReadPin(Omron2_GPIO_Port,Omron2_Pin);  
 	Omron[2] = HAL_GPIO_ReadPin(Omron3_GPIO_Port,Omron3_Pin);  //右爪
 	Omron[3] = HAL_GPIO_ReadPin(Omron4_GPIO_Port,Omron4_Pin);
-
 }
+
+
 
 /** 
-* @brief   一级取弹任务函数
-* @remarks 取第一排弹药箱
+* @brief  GPIO外部中断的回调函数，扔这里就行，不用管它
 * 日志    
 */
-void Caisson_Take(void)
-{
-	
-  Claw_Out_1_ON;  //一级伸爪
-	osDelay(150);
-//	Claw_Out_2_ON;  //二级伸爪
-//	osDelay(150);
-	OverTurn_Claw_ON;  //翻出爪子
-	osDelay(500);  //等待爪子下去
-	Clamp_OFF;  //抓取弹药箱
-	osDelay(100);  //等待夹紧弹药箱
-	OverTurn_Claw_OFF;  //翻回爪子
-	osDelay(1000);  //等待子弹落尽
-	Clamp_ON;  //松开爪子，准备将弹药箱扔掉
-	osDelay(100);  //等待爪子松开弹药箱
-	Launch_ON;  //将爪子弹射出去
-	osDelay(200);  //等待弹射完成
-	Launch_OFF; //收回弹射气缸
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+	switch(GPIO_Pin){
+		case Omron1_Pin:
+			Omron[0] = HAL_GPIO_ReadPin(Omron1_GPIO_Port,Omron1_Pin);		//左爪
+			break;
+		case Omron2_Pin:
+			Omron[1] = HAL_GPIO_ReadPin(Omron2_GPIO_Port,Omron2_Pin);   
+			break;
+		case Omron3_Pin:           
+			Omron[2] = HAL_GPIO_ReadPin(Omron3_GPIO_Port,Omron3_Pin);  //右爪
+			break;
+		case Omron4_Pin:
+			Omron[3] = HAL_GPIO_ReadPin(Omron4_GPIO_Port,Omron4_Pin);
+			break;				
+	}
 }
-
-
 
 /** 
 * @brief   解析主机发送数据并自行根据判断执行命令
@@ -108,7 +106,7 @@ void Caisson_Take(void)
 	switch (A[2])  //模式判断
 	{
 		
-case 31:
+case 32:  //限位初始化，左中右下
 			if(app_car_Claw_motor.block->IsBlock == 1)
 				 {
 						app_car_Claw_motor.Safe_Set();  //堵转停止
@@ -128,47 +126,81 @@ case 31:
 
 	       Claw_TargetAngle += A[1] * 0.002;
 			   app_car_Claw_motor.Angle_Set(Claw_TargetAngle);  //控制爪子电机左右移动  
-
+         app_car_ClawTake_Flag1 = ENDING;
    
 break;
-case 11 :  //副控取弹的模式
+case 12 :  //副控取弹的模式，左上右下
 			
-			if(A[0] > 0)
+			if(A[0] > 0)  //拨轮上   左边箱
 			   {
 				  
-//					 Claw_Out_1_ON;
-//					Claw_Out_2_ON;
-						app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f);  //限位
+					 app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f);  //限位
 					 Claw_TargetAngle = Claw_L_Lim + 50.f;
-					 Caisson_Take();
 					
 			   }
-			else if(A[3] > 0)
-			{
-				
-				app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f); 
-			  Claw_TargetAngle = Claw_L_Lim + 978.838f;
-				Caisson_Take();
-			}
-			 else if(A[0] < 0)
+		  else if(A[0] < 0)  //拨轮下  右边箱
 			   {
 					 app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f); 
 					 Claw_TargetAngle = Claw_L_Lim + 1900.641f;
-//				  Claw_Out_1_OFF;
-//					Claw_Out_2_OFF;
-					 Caisson_Take();
 			   }
-				 
-
-
+			if(A[3] > 0)  //右边通道     上  中间箱 
+				{
+					app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f); 
+					Claw_TargetAngle = Claw_L_Lim + 978.838f;
+				}
+				
+			else if(A[3] < 0)  //传感器没检测到弹药箱，即可以取弹了
+				{
+				  app_car_ClawTake_Flag1 = RUNNING;  //一级取弹开始
+				}
 				app_car_Claw_motor.Angle_Set(Claw_TargetAngle);
 break;
-	
+case 13:    //自动对位取弹，左上右中
+	      app_car_ClawTake_Flag1 = ENDING;
+break;			
 case 22:  //安全模式
 	    app_car_Claw_motor.Safe_Set();
+			app_car_ClawTake_Flag1 = ENDING;
+break;
+case 33:  
+			if(A[3] > 0)  //右边通道     上  中间箱 
+				{
+					app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f); 
+					Claw_TargetAngle = Claw_L_Lim + 978.838f;
+				}
+				app_car_Claw_motor.Angle_Set(Claw_TargetAngle);
+				app_car_ClawTake_Flag1 = ENDING;
+break;
+case   11:  //二级取弹
+				{
+					if(A[0] > 0)  //拨轮上   左边箱
+			   {
+				  
+					 app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f);  //限位
+					 Claw_TargetAngle = Claw_L_Lim + 50.f;
+					
+			   }
+		  else if(A[0] < 0)  //拨轮下  右边箱
+			   {
+					 app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f); 
+					 Claw_TargetAngle = Claw_L_Lim + 1900.641f;
+			   }
+			if(A[3] > 0)  //右边通道     上  中间箱 
+				{
+					app_car_Claw_motor.Limit(Claw_R_Lim - 80.f,Claw_L_Lim + 80.f); 
+					Claw_TargetAngle = Claw_L_Lim + 978.838f;
+				}
+				
+			else if(A[3] < 0)  //传感器没检测到弹药箱，即可以取弹了
+				{
+				  app_car_ClawTake_Flag2 = RUNNING;  //一级取弹开始
+				}
+				 app_car_Claw_motor.Angle_Set(Claw_TargetAngle);
+				}
 break;
 default:
 	    app_car_Claw_motor.Safe_Set();
+			app_car_ClawTake_Flag1 = ENDING;
 break;
 }
 

@@ -52,3 +52,4 @@ engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/t
 engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 engineer_slaver1\app_car.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
+engineer_slaver1\app_car.o: .\My_Task\task_main.h

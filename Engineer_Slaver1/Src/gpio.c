@@ -60,7 +60,7 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pins : PCPin PCPin PCPin */
   GPIO_InitStruct.Pin = Omron3_Pin|Omron2_Pin|Omron1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PCPin PCPin */
@@ -87,8 +87,12 @@ void MX_GPIO_Init(void)
   /*Configure GPIO pin : PtPin */
   GPIO_InitStruct.Pin = Omron4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_EVT_RISING_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(Omron4_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 }
 

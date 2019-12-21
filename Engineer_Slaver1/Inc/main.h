@@ -60,10 +60,13 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define Omron3_Pin GPIO_PIN_13
 #define Omron3_GPIO_Port GPIOC
+#define Omron3_EXTI_IRQn EXTI15_10_IRQn
 #define Omron2_Pin GPIO_PIN_14
 #define Omron2_GPIO_Port GPIOC
+#define Omron2_EXTI_IRQn EXTI15_10_IRQn
 #define Omron1_Pin GPIO_PIN_15
 #define Omron1_GPIO_Port GPIOC
+#define Omron1_EXTI_IRQn EXTI15_10_IRQn
 #define BLIE_Pin GPIO_PIN_0
 #define BLIE_GPIO_Port GPIOA
 #define RED_Pin GPIO_PIN_1
